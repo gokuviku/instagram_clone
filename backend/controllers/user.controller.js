@@ -1,4 +1,6 @@
 import { User } from "../models/user.model.js";
+import { Post } from "../models/post.model.js";
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/dataUri.js";
@@ -48,6 +50,17 @@ export const login = async (req, res) => {
         success: false,
       });
     }
+    //populate post if in post array
+    const populatedPosts = await Promise.all(
+      user.posts.map(async (postId) => {
+        const post = await Post.findById(postId);
+        if (post.author.equals(user._id)) {
+          return post;
+        }
+        return null;
+      })
+    );
+
     user = {
       _id: user._id,
       username: user.username,
